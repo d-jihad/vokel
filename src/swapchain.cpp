@@ -8,8 +8,11 @@ SwapchainSupportDetails querySwapchainSupport(const vk::PhysicalDevice& physical
     SwapchainSupportDetails support;
 
     support.capabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
+    support.formats = physicalDevice.getSurfaceFormatsKHR(surface);
+    support.presentModes = physicalDevice.getSurfacePresentModesKHR(surface);
 
     if (DEBUG_MODE) {
+        // capabilities logging
         std::cout << "Swapchain can support the following surface capabilities:\n";
 
         std::cout << "\tmin image count: " << support.capabilities.minImageCount << '\n';
@@ -56,24 +59,17 @@ SwapchainSupportDetails querySwapchainSupport(const vk::PhysicalDevice& physical
             std::cout << "\t\t" << line << '\n';
         }
 
-        support.formats = physicalDevice.getSurfaceFormatsKHR(surface);
-
-        if (DEBUG_MODE) {
-
-            for (const auto supportedFormat : support.formats) {
-                std::cout << "supported pixel format: " << vk::to_string(supportedFormat.format) << '\n';
-                std::cout << "supported color space: " << vk::to_string(supportedFormat.colorSpace) << '\n';
-            }
+        // formats logging
+        for (const auto supportedFormat : support.formats) {
+            std::cout << "supported pixel format: " << vk::to_string(supportedFormat.format) << '\n';
+            std::cout << "supported color space: " << vk::to_string(supportedFormat.colorSpace) << '\n';
         }
 
-        support.presentModes = physicalDevice.getSurfacePresentModesKHR(surface);
-
-        if (DEBUG_MODE) {
-            std::cout << "supported present modes:\n";
-            for (const auto& presentMode : support.presentModes) {
-                std::cout << "\n\t"
-                          << logPresentMode(presentMode) << '\n';
-            }
+        // present mode logging
+        std::cout << "supported present modes:\n";
+        for (const auto& presentMode : support.presentModes) {
+            std::cout << "\n\t"
+                      << logPresentMode(presentMode) << '\n';
         }
     }
 

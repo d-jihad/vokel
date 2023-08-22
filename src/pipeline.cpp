@@ -5,23 +5,24 @@ namespace vkInit {
 
 GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle& specification)
 {
-    vk::GraphicsPipelineCreateInfo pipelineInfo { vk::PipelineCreateFlags() };
+    vk::GraphicsPipelineCreateInfo pipelineInfo {};
+    pipelineInfo.flags = vk::PipelineCreateFlags();
 
     std::vector<vk::PipelineShaderStageCreateInfo> shadersStages;
 
     // vertex input
-    vk::PipelineVertexInputStateCreateInfo vertexInputInfo {
-        vk::PipelineVertexInputStateCreateFlags(),
-    };
+    vk::PipelineVertexInputStateCreateInfo vertexInputInfo {};
+    vertexInputInfo.flags = vk::PipelineVertexInputStateCreateFlags();
     vertexInputInfo.vertexBindingDescriptionCount = 0;
     vertexInputInfo.vertexAttributeDescriptionCount = 0;
+
     pipelineInfo.pVertexInputState = &vertexInputInfo;
 
     // input assembly
-    vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo {
-        vk::PipelineInputAssemblyStateCreateFlags(),
-    };
+    vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo {};
+    inputAssemblyInfo.flags = vk::PipelineInputAssemblyStateCreateFlags();
     inputAssemblyInfo.topology = vk::PrimitiveTopology::eTriangleList;
+
     pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
 
     // vertex shader
@@ -31,7 +32,8 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
 
     vk::ShaderModule vertexShader = vkUtil::createShaderModule(specification.vertFilePath, specification.device);
 
-    vk::PipelineShaderStageCreateInfo vertexShaderInfo { vk::PipelineShaderStageCreateFlags() };
+    vk::PipelineShaderStageCreateInfo vertexShaderInfo {};
+    vertexShaderInfo = vk::PipelineShaderStageCreateFlags();
     vertexShaderInfo.stage = vk::ShaderStageFlagBits::eVertex;
     vertexShaderInfo.module = vertexShader;
     vertexShaderInfo.pName = "main";
@@ -52,7 +54,8 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
         { specification.swapchainExtent.width, specification.swapchainExtent.height }
     };
 
-    vk::PipelineViewportStateCreateInfo viewportState { vk::PipelineViewportStateCreateFlags() };
+    vk::PipelineViewportStateCreateInfo viewportState {};
+    viewportState.flags = vk::PipelineViewportStateCreateFlags();
     viewportState.viewportCount = 1;
     viewportState.pViewports = &viewport;
     viewportState.scissorCount = 1;
@@ -61,7 +64,8 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
     pipelineInfo.pViewportState = &viewportState;
 
     // rasterizer
-    vk::PipelineRasterizationStateCreateInfo rasterizer { vk::PipelineRasterizationStateCreateFlags() };
+    vk::PipelineRasterizationStateCreateInfo rasterizer {};
+    rasterizer.flags = vk::PipelineRasterizationStateCreateFlags();
     rasterizer.depthClampEnable = VK_FALSE;
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = vk::PolygonMode::eFill;
@@ -79,7 +83,8 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
 
     vk::ShaderModule fragmentShader = vkUtil::createShaderModule(specification.fragFilePath, specification.device);
 
-    vk::PipelineShaderStageCreateInfo fragmentShaderInfo { vk::PipelineShaderStageCreateFlags() };
+    vk::PipelineShaderStageCreateInfo fragmentShaderInfo {};
+    fragmentShaderInfo.flags = vk::PipelineShaderStageCreateFlags();
     fragmentShaderInfo.stage = vk::ShaderStageFlagBits::eFragment;
     fragmentShaderInfo.module = fragmentShader;
     fragmentShaderInfo.pName = "main";
@@ -90,7 +95,8 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
     pipelineInfo.pStages = shadersStages.data();
 
     // multisampling
-    vk::PipelineMultisampleStateCreateInfo multisampling { vk::PipelineMultisampleStateCreateFlags() };
+    vk::PipelineMultisampleStateCreateInfo multisampling {};
+    multisampling.flags = vk::PipelineMultisampleStateCreateFlags();
     multisampling.sampleShadingEnable = VK_FALSE;
     multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1;
 
@@ -101,7 +107,8 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
     colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
     colorBlendAttachment.blendEnable = VK_FALSE;
 
-    vk::PipelineColorBlendStateCreateInfo colorBlending { vk::PipelineColorBlendStateCreateFlags() };
+    vk::PipelineColorBlendStateCreateInfo colorBlending {};
+    colorBlending.flags = vk::PipelineColorBlendStateCreateFlags();
     colorBlending.logicOpEnable = VK_FALSE;
     colorBlending.logicOp = vk::LogicOp::eCopy;
     colorBlending.attachmentCount = 1;
@@ -158,7 +165,8 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
 
 vk::PipelineLayout createPipelineLayout(const vk::Device& device)
 {
-    vk::PipelineLayoutCreateInfo layoutInfo { vk::PipelineLayoutCreateFlags() };
+    vk::PipelineLayoutCreateInfo layoutInfo;
+    layoutInfo.flags = vk::PipelineLayoutCreateFlags();
     layoutInfo.setLayoutCount = 0;
     layoutInfo.pushConstantRangeCount = 0;
 
@@ -173,7 +181,8 @@ vk::PipelineLayout createPipelineLayout(const vk::Device& device)
 
 vk::RenderPass createRenderPass(const vk::Device& device, const vk::Format& swapchainImageFormat)
 {
-    vk::AttachmentDescription colorAttachment { vk::AttachmentDescriptionFlags() };
+    vk::AttachmentDescription colorAttachment {};
+    colorAttachment.flags = vk::AttachmentDescriptionFlags();
     colorAttachment.format = swapchainImageFormat;
     colorAttachment.samples = vk::SampleCountFlagBits::e1;
     colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
@@ -187,12 +196,14 @@ vk::RenderPass createRenderPass(const vk::Device& device, const vk::Format& swap
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
 
-    vk::SubpassDescription subpass { vk::SubpassDescriptionFlags() };
+    vk::SubpassDescription subpass {};
+    subpass.flags = vk::SubpassDescriptionFlags();
     subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &colorAttachmentRef;
 
-    vk::RenderPassCreateInfo renderpassInfo { vk::RenderPassCreateFlags() };
+    vk::RenderPassCreateInfo renderpassInfo {};
+    renderpassInfo = vk::RenderPassCreateFlags();
     renderpassInfo.attachmentCount = 1;
     renderpassInfo.pAttachments = &colorAttachment;
     renderpassInfo.subpassCount = 1;

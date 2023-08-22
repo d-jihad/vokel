@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.25)
 project(VoKel)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_COMPILE_FEATURES "cxx_std_20")
 
 # project requires Vulkan SDK
 find_package(Vulkan REQUIRED)

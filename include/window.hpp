@@ -1,6 +1,8 @@
 #pragma once
 
 #include "config.hpp"
+#include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_video.h>
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -25,6 +27,9 @@ public:
     [[nodiscard]] std::vector<const char*> getVulkanRequiredExtensions();
 
     VkSurfaceKHR createVulkanSurface(const vk::Instance& instance);
+
+    double getTime() { return SDL_GetPerformanceCounter(); }
+    void setWindowTitle(const std::string title) { SDL_SetWindowTitle(window, title.c_str()); }
 
 private:
     SDL_Window* window;

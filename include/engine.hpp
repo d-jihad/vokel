@@ -2,19 +2,21 @@
 
 #include "swapchain.hpp"
 #include "window.hpp"
+#include <stdint.h>
+#include <vulkan/vulkan_handles.hpp>
 
 namespace VoKel {
 
 class Engine {
 public:
-    Engine();
+    Engine(uint32_t width, uint32_t height, Window& window);
     ~Engine();
 
-    void run();
+    void render();
 
 private:
-    uint32_t width { 680 }, height { 680 };
-    Window window;
+    uint32_t width, height;
+    Window& window;
 
     // vulkan instance related handles
     vk::Instance instance { nullptr };
@@ -37,8 +39,20 @@ private:
     vk::RenderPass renderpass;
     vk::Pipeline pipeline;
 
+    // command-related variables
+    vk::CommandPool commandPool;
+    vk::CommandBuffer mainCommandBuffer;
+
+    // synchronization-related variables
+    vk::Semaphore imageAvailable, renderFinished;
+    vk::Fence inFlightFence;
+
     void createInstance();
     void createDevice();
     void createPipeline();
+
+    void finalizeSetup();
+
+    void recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
 };
 } // namespace VoKel

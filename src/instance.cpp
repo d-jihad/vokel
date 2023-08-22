@@ -71,9 +71,9 @@ vk::Instance createInstance(
         std::cout
             << "System can support vulkan:"
             << "\n\t Variant: " << VK_API_VERSION_VARIANT(version)
-            << "\n\t Major: " << VK_API_VERSION_MAJOR(version)
-            << "\n\t Minor: " << VK_API_VERSION_MINOR(version)
-            << "\n\t Patch: " << VK_API_VERSION_PATCH(version) << '\n';
+            << "\n\t Major:   " << VK_API_VERSION_MAJOR(version)
+            << "\n\t Minor:   " << VK_API_VERSION_MINOR(version)
+            << "\n\t Patch:   " << VK_API_VERSION_PATCH(version) << '\n';
     }
 
     /*

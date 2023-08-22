@@ -1,3 +1,4 @@
+#include "app.hpp"
 #include "engine.hpp"
 #include <exception>
 #include <iostream>
@@ -6,8 +7,8 @@
 int main()
 {
     try {
-        VoKel::Engine engine {};
-        engine.run();
+        App app { 900, 700 };
+        app.run();
 
     } catch (const std::exception& exception) {
         std::cout << exception.what() << std::endl;
