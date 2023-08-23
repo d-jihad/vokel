@@ -60,7 +60,7 @@ foreach(SHADER IN LISTS SHADERS)
     add_custom_command(OUTPUT ${SHADER_DIR_OUT}/${FILENAME}.spv
         COMMAND Vulkan::glslc ${SHADER} -o ${SHADER_DIR_OUT}/${FILENAME}.spv
         DEPENDS ${SHADER}
-        COMMENT "Compiling ${FILENAME}")
+        COMMENT "[shader stage]: compiling ${FILENAME}")
 
     list(APPEND SPV_SHADERS ${SHADER_DIR_OUT}/${FILENAME}.spv)
 endForeach()

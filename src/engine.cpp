@@ -6,6 +6,8 @@
 #include "instance.hpp"
 #include "logging.hpp"
 #include "pipeline.hpp"
+#include "render_structs.hpp"
+#include "scene.hpp"
 #include "swapchain.hpp"
 #include "sync.hpp"
 #include "window.hpp"
@@ -13,6 +15,7 @@
 #include <array>
 #include <stdint.h>
 #include <tuple>
+#include <vulkan/vulkan_enums.hpp>
 
 namespace VoKel {
 
@@ -33,7 +36,6 @@ Engine::~Engine()
 
     for (auto& frame : swapchainFrames) {
         device.destroyFence(frame.inFlight);
-
         device.destroySemaphore(frame.imageAvailable);
         device.destroySemaphore(frame.renderFinished);
     }
@@ -130,14 +132,13 @@ void Engine::finalizeSetup()
     mainCommandBuffer = vkInit::createCommandBuffer(commandBufferInput);
 
     for (auto& frame : swapchainFrames) {
-
         frame.inFlight = vkInit::createFence(device);
         frame.imageAvailable = vkInit::createSemaphore(device);
         frame.renderFinished = vkInit::createSemaphore(device);
     }
 }
 
-void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
+void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex, const Scene& scene)
 {
     vk::CommandBufferBeginInfo beginInfo {};
     try {
@@ -163,7 +164,13 @@ void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t
 
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
-    commandBuffer.draw(3, 1, 0, 0);
+    for (auto& position : scene.trianglePositions) {
+        glm::mat4 model = glm::translate(glm::mat4 { 1.0f }, position);
+        vkUtil::ObjectData objectData;
+        objectData.model = model;
+        commandBuffer.pushConstants(layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(objectData), &objectData);
+        commandBuffer.draw(3, 1, 0, 0);
+    }
 
     commandBuffer.endRenderPass();
 
@@ -176,7 +183,7 @@ void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t
     }
 }
 
-void Engine::render()
+void Engine::render(const Scene& scene)
 {
     device.waitForFences(1, &swapchainFrames[frameNumber].inFlight, VK_TRUE, UINT64_MAX);
 
@@ -188,7 +195,7 @@ void Engine::render()
 
     commandBuffer.reset();
 
-    recordDrawCommands(commandBuffer, imageIndex);
+    recordDrawCommands(commandBuffer, imageIndex, scene);
 
     vk::SubmitInfo submitInfo {};
     vk::Semaphore waitSemaphores[] = { swapchainFrames[frameNumber].imageAvailable };

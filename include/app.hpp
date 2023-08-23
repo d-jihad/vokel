@@ -1,7 +1,9 @@
 #pragma once
 #include "config.hpp"
 #include "engine.hpp"
+#include "scene.hpp"
 #include "window.hpp"
+
 #include <stdint.h>
 
 class App {
@@ -9,6 +11,7 @@ class App {
 private:
     VoKel::Window window;
     VoKel::Engine graphicEngine;
+    Scene scene;
 
     double lastTime, currentTime;
     int numFrames;

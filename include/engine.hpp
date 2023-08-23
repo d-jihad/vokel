@@ -1,9 +1,12 @@
 #pragma once
 
+#include "render_structs.hpp"
+#include "scene.hpp"
 #include "swapchain.hpp"
 #include "window.hpp"
+
+
 #include <stdint.h>
-#include <vulkan/vulkan_handles.hpp>
 
 namespace VoKel {
 
@@ -12,7 +15,7 @@ public:
     Engine(uint32_t width, uint32_t height, Window& window);
     ~Engine();
 
-    void render();
+    void render(const Scene& scene);
 
 private:
     uint32_t width, height;
@@ -52,6 +55,6 @@ private:
 
     void finalizeSetup();
 
-    void recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex);
+    void recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex, const Scene& scene);
 };
 } // namespace VoKel

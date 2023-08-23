@@ -1,5 +1,8 @@
 #include "pipeline.hpp"
+#include "render_structs.hpp"
 #include "shaders.hpp"
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_structs.hpp>
 
 namespace vkInit {
 
@@ -168,7 +171,13 @@ vk::PipelineLayout createPipelineLayout(const vk::Device& device)
     vk::PipelineLayoutCreateInfo layoutInfo;
     layoutInfo.flags = vk::PipelineLayoutCreateFlags();
     layoutInfo.setLayoutCount = 0;
-    layoutInfo.pushConstantRangeCount = 0;
+
+    layoutInfo.pushConstantRangeCount = 1;
+    vk::PushConstantRange pushConstantInfo;
+    pushConstantInfo.offset = 0;
+    pushConstantInfo.size = sizeof(vkUtil::ObjectData);
+    pushConstantInfo.stageFlags = vk::ShaderStageFlagBits::eVertex;
+    layoutInfo.pPushConstantRanges = &pushConstantInfo;
 
     try {
         return device.createPipelineLayout(layoutInfo);

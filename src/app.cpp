@@ -1,4 +1,5 @@
 #include "app.hpp"
+#include "scene.hpp"
 
 #include <sstream>
 #include <stdint.h>
@@ -6,6 +7,7 @@
 App::App(uint32_t width, uint32_t height)
     : window { "Voxelize this!", width, height }
     , graphicEngine { width, height, window }
+    , scene {}
 {
 }
 
@@ -17,7 +19,7 @@ void App::run()
 {
     while (!window.shouldClose()) {
         window.update();
-        graphicEngine.render();
+        graphicEngine.render(scene);
         calculateFrameRate();
     }
 }
