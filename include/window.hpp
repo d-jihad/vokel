@@ -1,12 +1,13 @@
 #pragma once
 
 #include "config.hpp"
-#include <SDL2/SDL_timer.h>
-#include <SDL2/SDL_video.h>
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
+
+#include <SDL2/SDL_timer.h>
+#include <SDL2/SDL_video.h>
 
 #include <string>
 #include <vector>
@@ -29,6 +30,12 @@ public:
     VkSurfaceKHR createVulkanSurface(const vk::Instance& instance);
 
     double getTime() { return SDL_GetPerformanceCounter(); }
+
+    double getElapsedTime(double start)
+    {
+        return (SDL_GetPerformanceCounter() - start) / (double)SDL_GetPerformanceFrequency();
+    }
+
     void setWindowTitle(const std::string title) { SDL_SetWindowTitle(window, title.c_str()); }
 
 private:

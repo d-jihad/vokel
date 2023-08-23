@@ -1,7 +1,5 @@
 #include "app.hpp"
-#include <SDL2/SDL_timer.h>
-#include <SDL2/SDL_video.h>
-#include <algorithm>
+
 #include <sstream>
 #include <stdint.h>
 
@@ -26,8 +24,7 @@ void App::run()
 
 void App::calculateFrameRate()
 {
-    currentTime = window.getTime();
-    double delta = (double)((currentTime - lastTime) / (double)SDL_GetPerformanceFrequency());
+    double delta = window.getElapsedTime(lastTime);
 
     if (delta >= 1) {
         int framerate { std::max(1, int(numFrames / delta)) };
@@ -35,7 +32,7 @@ void App::calculateFrameRate()
         std::stringstream title;
         title << "Voxelize this! @ " << framerate << "fps";
         window.setWindowTitle(title.str());
-        lastTime = currentTime;
+        lastTime = window.getTime();
         numFrames = -1;
         frameTime = float(1000.0 / framerate);
     }

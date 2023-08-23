@@ -31,10 +31,12 @@ Engine::~Engine()
 {
     device.waitIdle();
 
-    device.destroyFence(inFlightFence);
+    for (auto& frame : swapchainFrames) {
+        device.destroyFence(frame.inFlight);
 
-    device.destroySemaphore(imageAvailable);
-    device.destroySemaphore(renderFinished);
+        device.destroySemaphore(frame.imageAvailable);
+        device.destroySemaphore(frame.renderFinished);
+    }
 
     device.destroyCommandPool(commandPool);
 
@@ -95,6 +97,9 @@ void Engine::createDevice()
     swapchainFormat = bundle.format;
     swapchainFrames = bundle.frames;
     swapchainExtent = bundle.extent;
+
+    maxFrameInFlight = static_cast<int>(swapchainFrames.size());
+    frameNumber = 0;
 }
 
 void Engine::createPipeline()
@@ -124,9 +129,12 @@ void Engine::finalizeSetup()
     vkInit::commandBufferInputChunk commandBufferInput { device, commandPool, swapchainFrames };
     mainCommandBuffer = vkInit::createCommandBuffer(commandBufferInput);
 
-    inFlightFence = vkInit::createFence(device);
-    imageAvailable = vkInit::createSemaphore(device);
-    renderFinished = vkInit::createSemaphore(device);
+    for (auto& frame : swapchainFrames) {
+
+        frame.inFlight = vkInit::createFence(device);
+        frame.imageAvailable = vkInit::createSemaphore(device);
+        frame.renderFinished = vkInit::createSemaphore(device);
+    }
 }
 
 void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex)
@@ -170,32 +178,32 @@ void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t
 
 void Engine::render()
 {
-    device.waitForFences(1, &inFlightFence, VK_TRUE, UINT64_MAX);
+    device.waitForFences(1, &swapchainFrames[frameNumber].inFlight, VK_TRUE, UINT64_MAX);
 
-    device.resetFences(1, &inFlightFence);
+    device.resetFences(1, &swapchainFrames[frameNumber].inFlight);
 
-    uint32_t imageIndex = device.acquireNextImageKHR(swapchain, UINT64_MAX, imageAvailable, nullptr).value;
+    uint32_t imageIndex = device.acquireNextImageKHR(swapchain, UINT64_MAX, swapchainFrames[frameNumber].imageAvailable, nullptr).value;
 
-    vk::CommandBuffer commandBuffer = swapchainFrames[imageIndex].commandBuffer;
+    vk::CommandBuffer commandBuffer = swapchainFrames[frameNumber].commandBuffer;
 
     commandBuffer.reset();
 
     recordDrawCommands(commandBuffer, imageIndex);
 
     vk::SubmitInfo submitInfo {};
-    vk::Semaphore waitSemaphores[] = { imageAvailable };
+    vk::Semaphore waitSemaphores[] = { swapchainFrames[frameNumber].imageAvailable };
     vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
-    vk::Semaphore signalSemaphores[] = { renderFinished };
+    vk::Semaphore signalSemaphores[] = { swapchainFrames[frameNumber].renderFinished };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     try {
-        graphicsQueue.submit(submitInfo, inFlightFence);
+        graphicsQueue.submit(submitInfo, swapchainFrames[frameNumber].inFlight);
     } catch (const vk::SystemError& err) {
         if (DEBUG_MODE) {
             std::cout << "Failed to submit draw command buffer\n";
@@ -211,6 +219,8 @@ void Engine::render()
     presentInfo.pImageIndices = &imageIndex;
 
     presentQueue.presentKHR(presentInfo);
+
+    frameNumber = (frameNumber + 1) % maxFrameInFlight;
 }
 
 } // namespace VoKel

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.hpp"
+#include <vulkan/vulkan_handles.hpp>
 
 namespace vkInit {
 struct SwapchainSupportDetails {
@@ -14,6 +15,8 @@ struct SwapchainFrame {
     vk::ImageView imageView;
     vk::Framebuffer framebuffer;
     vk::CommandBuffer commandBuffer;
+    vk::Semaphore imageAvailable, renderFinished;
+    vk::Fence inFlight;
 };
 
 struct SwapchainBundle {

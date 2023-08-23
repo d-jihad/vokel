@@ -1,15 +1,10 @@
 #include "commands.hpp"
 
-#include "config.hpp"
 #include "device.hpp"
+
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <vcruntime.h>
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_handles.hpp>
-#include <vulkan/vulkan_structs.hpp>
 
 namespace vkInit {
 
@@ -48,10 +43,8 @@ vk::CommandBuffer createCommandBuffer(commandBufferInputChunk inputChunk)
         }
     }
 
-    vk::CommandBuffer commandBuffer { nullptr };
-
     try {
-        commandBuffer = inputChunk.device.allocateCommandBuffers(allocInfo)[0];
+        return inputChunk.device.allocateCommandBuffers(allocInfo)[0];
 
         if (DEBUG_MODE) {
             std::cout << "Successfully created the main command buffer\n";
@@ -61,7 +54,7 @@ vk::CommandBuffer createCommandBuffer(commandBufferInputChunk inputChunk)
         throw std::runtime_error { "Failed to allocate main command buffer" };
     }
 
-    return commandBuffer;
+    return nullptr;
 }
 
 }

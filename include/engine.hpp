@@ -44,8 +44,7 @@ private:
     vk::CommandBuffer mainCommandBuffer;
 
     // synchronization-related variables
-    vk::Semaphore imageAvailable, renderFinished;
-    vk::Fence inFlightFence;
+    int maxFrameInFlight, frameNumber;
 
     void createInstance();
     void createDevice();
