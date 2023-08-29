@@ -16,8 +16,6 @@
 #include <iostream>
 #include <stdint.h>
 #include <tuple>
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_enums.hpp>
 
 namespace VoKel {
 
@@ -138,7 +136,7 @@ void Engine::createPipeline()
     specification.swapchainExtent = swapchainExtent;
     specification.format = swapchainFormat;
 
-    vkInit::GraphicsPipelineOutBundle output = vkInit::createGraphicsPipeline(specification);
+    vkInit::GraphicsPipelineOutBundle output = vkInit::createGraphicsPipeline(specification, pipeline);
     layout = output.layout;
     renderpass = output.renderpass;
     pipeline = output.pipeline;
@@ -200,6 +198,20 @@ void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t
     commandBuffer.beginRenderPass(&renderPassInfo, vk::SubpassContents::eInline);
 
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+
+    vk::Viewport viewport {};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)swapchainExtent.width;
+    viewport.height = (float)swapchainExtent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    commandBuffer.setViewport(0, viewport);
+
+    vk::Rect2D scissor {};
+    scissor.setOffset({ 0, 0 });
+    scissor.extent = swapchainExtent;
+    commandBuffer.setScissor(0, scissor);
 
     for (auto& position : scene.trianglePositions) {
         glm::mat4 model = glm::translate(glm::mat4 { 1.0f }, position);

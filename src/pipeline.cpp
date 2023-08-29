@@ -1,8 +1,6 @@
 #include "pipeline.hpp"
 #include "render_structs.hpp"
 #include "shaders.hpp"
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_structs.hpp>
 
 namespace vkInit {
 
@@ -139,17 +137,17 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
     vk::RenderPass renderpass = createRenderPass(specification.device, specification.format);
     pipelineInfo.renderPass = renderpass;
 
-    // std::vector<vk::DynamicState> dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+    std::vector<vk::DynamicState> dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
 
-    // vk::PipelineDynamicStateCreateInfo dynamicStateInfo {};
-    // dynamicStateInfo.flags = vk::PipelineDynamicStateCreateFlags();
-    // dynamicStateInfo.dynamicStateCount = dynamicStates.size();
-    // dynamicStateInfo.pDynamicStates = dynamicStates.data();
+    vk::PipelineDynamicStateCreateInfo dynamicStateInfo {};
+    dynamicStateInfo.flags = vk::PipelineDynamicStateCreateFlags();
+    dynamicStateInfo.dynamicStateCount = dynamicStates.size();
+    dynamicStateInfo.pDynamicStates = dynamicStates.data();
 
-    // pipelineInfo.pDynamicState = &dynamicStateInfo;
+    pipelineInfo.pDynamicState = &dynamicStateInfo;
 
     // extra
-    pipelineInfo.basePipelineHandle = oldPipeline;
+    pipelineInfo.basePipelineHandle = nullptr;
 
     // creating a graphics pipeline
     if (DEBUG_MODE) {

@@ -4,7 +4,7 @@
 
 namespace VoKel {
 
-Window::Window(const std::string& title, const uint32_t w, const uint32_t h)
+Window::Window(const std::string& title, const int w, const int h)
     : title { title }
     , width { w }
     , height { h }

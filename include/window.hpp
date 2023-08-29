@@ -17,7 +17,7 @@ namespace VoKel {
 
 class Window {
 public:
-    Window(const std::string& title, const uint32_t w, const uint32_t h);
+    Window(const std::string& title, const int w, const int h);
     ~Window();
 
     Window(const Window&) = delete;
@@ -41,10 +41,8 @@ public:
 
     std::tuple<uint32_t, uint32_t> getFramebufferSize()
     {
-        int w, h;
-        SDL_Vulkan_GetDrawableSize(window, &w, &h);
-        std::cout << "--------------------------- Get Drawable size returned " << w << " - " << h << "\n";
-        return { w, h };
+        SDL_Vulkan_GetDrawableSize(window, &width, &height);
+        return { width, height };
     }
 
     bool isMinimized()
@@ -56,7 +54,7 @@ public:
 
 private:
     SDL_Window* window;
-    uint32_t width, height;
+    int width, height;
     std::string title;
 
     bool keep_running { true };
