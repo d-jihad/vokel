@@ -11,7 +11,7 @@ class App {
 private:
     VoKel::Window window;
     VoKel::Engine graphicEngine;
-    Scene scene;
+    VoKel::Scene scene;
 
     double lastTime, currentTime;
     int numFrames;

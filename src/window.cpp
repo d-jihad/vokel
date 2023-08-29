@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include <SDL2/SDL_video.h>
 #include <stdexcept>
 
 namespace VoKel {
@@ -26,7 +27,7 @@ void Window::init()
 
     window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED, width,
-        height, SDL_WINDOW_VULKAN);
+        height, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
 
     if (!window) {
         std::cout << "Failed to create window\n";
@@ -77,7 +78,7 @@ VkSurfaceKHR Window::createVulkanSurface(const vk::Instance& instance)
 {
     VkSurfaceKHR surface { nullptr };
     if (SDL_FALSE == SDL_Vulkan_CreateSurface(window, instance, &surface)) {
-        throw std::runtime_error{"Failed to abstract SDL surface for Vulkan"};
+        throw std::runtime_error { "Failed to abstract SDL surface for Vulkan" };
     } else {
         if (DEBUG_MODE) {
             std::cout << "Successfully abstracted SDL surface for Vulkan\n";

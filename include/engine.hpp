@@ -5,7 +5,6 @@
 #include "swapchain.hpp"
 #include "window.hpp"
 
-
 #include <stdint.h>
 
 namespace VoKel {
@@ -51,10 +50,16 @@ private:
 
     void createInstance();
     void createDevice();
+    void createSwapchain();
+    void recreateSwapchain();
     void createPipeline();
 
     void finalizeSetup();
+    void createFramebuffers();
+    void createFrameSyncObj();
 
     void recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex, const Scene& scene);
+
+    void cleanupSwapchain();
 };
 } // namespace VoKel

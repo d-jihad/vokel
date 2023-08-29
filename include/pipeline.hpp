@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.hpp"
+#include <vulkan/vulkan_handles.hpp>
 
 namespace vkInit {
 
@@ -18,7 +19,7 @@ struct GraphicsPipelineOutBundle {
     vk::Pipeline pipeline;
 };
 
-GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle& specification);
+GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle& specification, vk::Pipeline oldPipeline = nullptr);
 
 vk::PipelineLayout createPipelineLayout(const vk::Device& device);
 

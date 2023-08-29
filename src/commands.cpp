@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vulkan/vulkan_handles.hpp>
 
 namespace vkInit {
 
@@ -32,6 +33,29 @@ vk::CommandBuffer createCommandBuffer(commandBufferInputChunk inputChunk)
     allocInfo.level = vk::CommandBufferLevel::ePrimary;
     allocInfo.commandBufferCount = 1;
 
+    try {
+        vk::CommandBuffer commandBuffer = inputChunk.device.allocateCommandBuffers(allocInfo)[0];
+
+        if (DEBUG_MODE) {
+            std::cout << "Successfully created the main command buffer\n";
+        }
+
+        return commandBuffer;
+
+    } catch (const vk::SystemError& err) {
+        throw std::runtime_error { "Failed to allocate main command buffer" };
+    }
+
+    return nullptr;
+}
+
+void createFrameCommandBuffer(commandBufferInputChunk inputChunk)
+{
+    vk::CommandBufferAllocateInfo allocInfo {};
+    allocInfo.commandPool = inputChunk.commandPool;
+    allocInfo.level = vk::CommandBufferLevel::ePrimary;
+    allocInfo.commandBufferCount = 1;
+
     for (size_t i { 0 }; i < inputChunk.frames.size(); i++) {
         try {
             inputChunk.frames[i].commandBuffer = inputChunk.device.allocateCommandBuffers(allocInfo)[0];
@@ -42,19 +66,6 @@ vk::CommandBuffer createCommandBuffer(commandBufferInputChunk inputChunk)
             throw std::runtime_error { "Failed to create frame buffer" };
         }
     }
-
-    try {
-        return inputChunk.device.allocateCommandBuffers(allocInfo)[0];
-
-        if (DEBUG_MODE) {
-            std::cout << "Successfully created the main command buffer\n";
-        }
-
-    } catch (const vk::SystemError& err) {
-        throw std::runtime_error { "Failed to allocate main command buffer" };
-    }
-
-    return nullptr;
 }
 
 }

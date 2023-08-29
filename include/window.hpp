@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.hpp"
+#include <stdint.h>
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
@@ -38,6 +39,21 @@ public:
 
     void setWindowTitle(const std::string title) { SDL_SetWindowTitle(window, title.c_str()); }
 
+    std::tuple<uint32_t, uint32_t> getFramebufferSize()
+    {
+        int w, h;
+        SDL_Vulkan_GetDrawableSize(window, &w, &h);
+        std::cout << "--------------------------- Get Drawable size returned " << w << " - " << h << "\n";
+        return { w, h };
+    }
+
+    bool isMinimized()
+    {
+        return SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED;
+    }
+
+    void processInput();
+
 private:
     SDL_Window* window;
     uint32_t width, height;
@@ -48,6 +64,5 @@ private:
     SDL_Event e;
 
     void init();
-    void processInput();
 };
 } // namespace VoKel

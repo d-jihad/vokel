@@ -15,4 +15,6 @@ vk::CommandPool createCommandPool(const vk::Device& device, const vk::PhysicalDe
 
 vk::CommandBuffer createCommandBuffer(commandBufferInputChunk inputChunk);
 
+void createFrameCommandBuffer(commandBufferInputChunk inputChunk);
+
 }

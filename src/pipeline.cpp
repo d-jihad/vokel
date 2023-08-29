@@ -6,7 +6,7 @@
 
 namespace vkInit {
 
-GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle& specification)
+GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle& specification, vk::Pipeline oldPipeline)
 {
     vk::GraphicsPipelineCreateInfo pipelineInfo {};
     pipelineInfo.flags = vk::PipelineCreateFlags();
@@ -139,8 +139,17 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
     vk::RenderPass renderpass = createRenderPass(specification.device, specification.format);
     pipelineInfo.renderPass = renderpass;
 
+    // std::vector<vk::DynamicState> dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+
+    // vk::PipelineDynamicStateCreateInfo dynamicStateInfo {};
+    // dynamicStateInfo.flags = vk::PipelineDynamicStateCreateFlags();
+    // dynamicStateInfo.dynamicStateCount = dynamicStates.size();
+    // dynamicStateInfo.pDynamicStates = dynamicStates.data();
+
+    // pipelineInfo.pDynamicState = &dynamicStateInfo;
+
     // extra
-    pipelineInfo.basePipelineHandle = nullptr;
+    pipelineInfo.basePipelineHandle = oldPipeline;
 
     // creating a graphics pipeline
     if (DEBUG_MODE) {

@@ -13,8 +13,10 @@
 #include "window.hpp"
 
 #include <array>
+#include <iostream>
 #include <stdint.h>
 #include <tuple>
+#include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_enums.hpp>
 
 namespace VoKel {
@@ -34,24 +36,13 @@ Engine::~Engine()
 {
     device.waitIdle();
 
-    for (auto& frame : swapchainFrames) {
-        device.destroyFence(frame.inFlight);
-        device.destroySemaphore(frame.imageAvailable);
-        device.destroySemaphore(frame.renderFinished);
-    }
-
     device.destroyCommandPool(commandPool);
 
     device.destroyRenderPass(renderpass);
     device.destroyPipelineLayout(layout);
     device.destroyPipeline(pipeline);
 
-    for (const auto frame : swapchainFrames) {
-        device.destroyImageView(frame.imageView);
-        device.destroyFramebuffer(frame.framebuffer);
-    }
-
-    device.destroySwapchainKHR(swapchain);
+    cleanupSwapchain();
     device.destroy();
 
     instance.destroySurfaceKHR(surface);
@@ -61,6 +52,19 @@ Engine::~Engine()
     }
 
     instance.destroy();
+}
+
+void Engine::cleanupSwapchain()
+{
+    for (auto& frame : swapchainFrames) {
+        device.destroyFence(frame.inFlight);
+        device.destroySemaphore(frame.imageAvailable);
+        device.destroySemaphore(frame.renderFinished);
+        device.destroyImageView(frame.imageView);
+        device.destroyFramebuffer(frame.framebuffer);
+    }
+
+    device.destroySwapchainKHR(swapchain);
 }
 
 void Engine::createInstance()
@@ -94,14 +98,35 @@ void Engine::createDevice()
     device = vkInit::createLogicalDevice(physicalDevice, surface);
     std::tie(graphicsQueue, presentQueue) = vkInit::getQueue(physicalDevice, device, surface);
 
+    createSwapchain();
+    frameNumber = 0;
+}
+
+void Engine::createSwapchain()
+{
     vkInit::SwapchainBundle bundle = vkInit::createSwapchain(device, physicalDevice, surface, width, height);
     swapchain = bundle.swapchain;
     swapchainFormat = bundle.format;
     swapchainFrames = bundle.frames;
     swapchainExtent = bundle.extent;
-
     maxFrameInFlight = static_cast<int>(swapchainFrames.size());
-    frameNumber = 0;
+}
+
+void Engine::recreateSwapchain()
+{
+    while (window.isMinimized()) {
+        window.processInput();
+    }
+
+    device.waitIdle();
+
+    cleanupSwapchain();
+    createSwapchain();
+    createFramebuffers();
+    createFrameSyncObj();
+
+    vkInit::commandBufferInputChunk commandBufferInput { device, commandPool, swapchainFrames };
+    vkInit::createFrameCommandBuffer(commandBufferInput);
 }
 
 void Engine::createPipeline()
@@ -119,7 +144,7 @@ void Engine::createPipeline()
     pipeline = output.pipeline;
 }
 
-void Engine::finalizeSetup()
+void Engine::createFramebuffers()
 {
     vkInit::framebufferInput framebufferInput {};
     framebufferInput.device = device;
@@ -127,15 +152,27 @@ void Engine::finalizeSetup()
     framebufferInput.swapchainExtent = swapchainExtent;
 
     vkInit::createFramebuffer(framebufferInput, swapchainFrames);
-    commandPool = vkInit::createCommandPool(device, physicalDevice, surface);
-    vkInit::commandBufferInputChunk commandBufferInput { device, commandPool, swapchainFrames };
-    mainCommandBuffer = vkInit::createCommandBuffer(commandBufferInput);
+}
 
+void Engine::createFrameSyncObj()
+{
     for (auto& frame : swapchainFrames) {
         frame.inFlight = vkInit::createFence(device);
         frame.imageAvailable = vkInit::createSemaphore(device);
         frame.renderFinished = vkInit::createSemaphore(device);
     }
+}
+
+void Engine::finalizeSetup()
+{
+    createFramebuffers();
+    commandPool = vkInit::createCommandPool(device, physicalDevice, surface);
+
+    vkInit::commandBufferInputChunk commandBufferInput { device, commandPool, swapchainFrames };
+    mainCommandBuffer = vkInit::createCommandBuffer(commandBufferInput);
+    vkInit::createFrameCommandBuffer(commandBufferInput);
+
+    createFrameSyncObj();
 }
 
 void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex, const Scene& scene)
@@ -185,11 +222,28 @@ void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t
 
 void Engine::render(const Scene& scene)
 {
-    device.waitForFences(1, &swapchainFrames[frameNumber].inFlight, VK_TRUE, UINT64_MAX);
+    if (device.waitForFences(1, &swapchainFrames[frameNumber].inFlight, VK_TRUE, UINT64_MAX) != vk::Result::eSuccess) {
+        if (DEBUG_MODE) {
+            std::cout << "failed on waitForFences\n";
+        }
+    }
 
-    device.resetFences(1, &swapchainFrames[frameNumber].inFlight);
+    uint32_t imageIndex;
 
-    uint32_t imageIndex = device.acquireNextImageKHR(swapchain, UINT64_MAX, swapchainFrames[frameNumber].imageAvailable, nullptr).value;
+    try {
+        vk::ResultValue acquire = device.acquireNextImageKHR(swapchain, UINT64_MAX, swapchainFrames[frameNumber].imageAvailable, nullptr);
+        imageIndex = acquire.value;
+
+    } catch (const vk::OutOfDateKHRError& err) {
+        recreateSwapchain();
+        return;
+    }
+
+    if (device.resetFences(1, &swapchainFrames[frameNumber].inFlight) != vk::Result::eSuccess) {
+        if (DEBUG_MODE) {
+            std::cout << "failed on resetFences\n";
+        }
+    }
 
     vk::CommandBuffer commandBuffer = swapchainFrames[frameNumber].commandBuffer;
 
@@ -225,7 +279,18 @@ void Engine::render(const Scene& scene)
     presentInfo.pSwapchains = swapchains;
     presentInfo.pImageIndices = &imageIndex;
 
-    presentQueue.presentKHR(presentInfo);
+    vk::Result present;
+
+    try {
+        present = presentQueue.presentKHR(presentInfo);
+    } catch (const vk::OutOfDateKHRError& error) {
+        present = vk::Result::eErrorOutOfDateKHR;
+    }
+
+    if (present == vk::Result::eErrorOutOfDateKHR || present == vk::Result::eSuboptimalKHR) {
+        recreateSwapchain();
+        return;
+    }
 
     frameNumber = (frameNumber + 1) % maxFrameInFlight;
 }
