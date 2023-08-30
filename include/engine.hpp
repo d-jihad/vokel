@@ -13,13 +13,13 @@ namespace VoKel {
 
 class Engine {
 public:
-    Engine(uint32_t width, uint32_t height, Window& window);
+    Engine(int width, int height, Window& window);
     ~Engine();
 
     void render(const Scene& scene);
 
 private:
-    uint32_t width, height;
+    int width, height;
     Window& window;
 
     // vulkan instance related handles

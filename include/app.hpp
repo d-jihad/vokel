@@ -17,11 +17,10 @@ private:
     int numFrames;
     float frameTime;
 
-    void init(uint32_t width, uint32_t height);
     void calculateFrameRate();
 
 public:
-    App(uint32_t width, uint32_t height);
+    App(int width, int height);
     ~App();
 
     void run();

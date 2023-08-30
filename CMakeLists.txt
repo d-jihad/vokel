@@ -35,7 +35,6 @@ if (WIN32)
         lib/glm/)
 
     link_directories(${CMAKE_SOURCE_DIR}/lib/SDL2/lib/)
-
 endif(WIN32)
 
 set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)

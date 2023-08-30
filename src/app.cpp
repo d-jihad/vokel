@@ -4,7 +4,7 @@
 #include <sstream>
 #include <stdint.h>
 
-App::App(uint32_t width, uint32_t height)
+App::App(int width, int height)
     : window { "Voxelize this!", width, height }
     , graphicEngine { width, height, window }
     , scene {}

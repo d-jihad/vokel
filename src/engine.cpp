@@ -22,7 +22,7 @@
 
 namespace VoKel {
 
-Engine::Engine(uint32_t width, uint32_t height, Window& window)
+Engine::Engine(int width, int height, Window& window)
     : width { width }
     , height { height }
     , window { window }
