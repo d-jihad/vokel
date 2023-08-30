@@ -3,9 +3,11 @@
 #include "render_structs.hpp"
 #include "scene.hpp"
 #include "swapchain.hpp"
+#include "triangle_mesh.hpp"
 #include "window.hpp"
 
 #include <stdint.h>
+#include <vulkan/vulkan_handles.hpp>
 
 namespace VoKel {
 
@@ -48,6 +50,9 @@ private:
     // synchronization-related variables
     int maxFrameInFlight, frameNumber;
 
+    // asset pointers
+    TriangleMesh* triangleMesh;
+
     void createInstance();
     void createDevice();
     void createSwapchain();
@@ -57,6 +62,9 @@ private:
     void finalizeSetup();
     void createFramebuffers();
     void createFrameSyncObj();
+
+    void createAssets();
+    void prepareScene(vk::CommandBuffer commandBuffer);
 
     void recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex, const Scene& scene);
 

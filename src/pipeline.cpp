@@ -1,6 +1,8 @@
 #include "pipeline.hpp"
+#include "mesh.hpp"
 #include "render_structs.hpp"
 #include "shaders.hpp"
+#include <array>
 
 namespace vkInit {
 
@@ -12,10 +14,14 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
     std::vector<vk::PipelineShaderStageCreateInfo> shadersStages;
 
     // vertex input
+    vk::VertexInputBindingDescription bindingDescription = vkMesh::getPosColorBindingDescription();
+    std::array<vk::VertexInputAttributeDescription, 2> attributeDescription = vkMesh::getPosColorAttributeDescriptions();
     vk::PipelineVertexInputStateCreateInfo vertexInputInfo {};
     vertexInputInfo.flags = vk::PipelineVertexInputStateCreateFlags();
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.vertexAttributeDescriptionCount = 2;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescription.data();
 
     pipelineInfo.pVertexInputState = &vertexInputInfo;
 
@@ -50,6 +56,7 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
         0.0f,
         1.0f
     };
+
     vk::Rect2D scissor {
         { 0, 0 },
         { specification.swapchainExtent.width, specification.swapchainExtent.height }
@@ -105,7 +112,10 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
 
     // color blend
     vk::PipelineColorBlendAttachmentState colorBlendAttachment {};
-    colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+    colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR;
+    colorBlendAttachment.colorWriteMask |= vk::ColorComponentFlagBits::eG;
+    colorBlendAttachment.colorWriteMask |= vk::ColorComponentFlagBits::eB;
+    colorBlendAttachment.colorWriteMask |= vk::ColorComponentFlagBits::eA;
     colorBlendAttachment.blendEnable = VK_FALSE;
 
     vk::PipelineColorBlendStateCreateInfo colorBlending {};
@@ -147,7 +157,7 @@ GraphicsPipelineOutBundle createGraphicsPipeline(const GraphicsPipelineInBundle&
     pipelineInfo.pDynamicState = &dynamicStateInfo;
 
     // extra
-    pipelineInfo.basePipelineHandle = nullptr;
+    pipelineInfo.basePipelineHandle = oldPipeline;
 
     // creating a graphics pipeline
     if (DEBUG_MODE) {

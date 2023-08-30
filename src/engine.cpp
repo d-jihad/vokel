@@ -10,12 +10,15 @@
 #include "scene.hpp"
 #include "swapchain.hpp"
 #include "sync.hpp"
+#include "triangle_mesh.hpp"
 #include "window.hpp"
 
 #include <array>
 #include <iostream>
 #include <stdint.h>
 #include <tuple>
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_handles.hpp>
 
 namespace VoKel {
 
@@ -28,6 +31,7 @@ Engine::Engine(uint32_t width, uint32_t height, Window& window)
     createDevice();
     createPipeline();
     finalizeSetup();
+    createAssets();
 }
 
 Engine::~Engine()
@@ -41,6 +45,9 @@ Engine::~Engine()
     device.destroyPipeline(pipeline);
 
     cleanupSwapchain();
+
+    delete triangleMesh;
+
     device.destroy();
 
     instance.destroySurfaceKHR(surface);
@@ -173,6 +180,18 @@ void Engine::finalizeSetup()
     createFrameSyncObj();
 }
 
+void Engine::createAssets()
+{
+    triangleMesh = new TriangleMesh(device, physicalDevice);
+}
+
+void Engine::prepareScene(vk::CommandBuffer commandBuffer)
+{
+    vk::Buffer vertexBuffer[] = { triangleMesh->buffer.buffer };
+    vk::DeviceSize offsets[] = { 0 };
+    commandBuffer.bindVertexBuffers(0, 1, vertexBuffer, offsets);
+}
+
 void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t imageIndex, const Scene& scene)
 {
     vk::CommandBufferBeginInfo beginInfo {};
@@ -212,6 +231,8 @@ void Engine::recordDrawCommands(const vk::CommandBuffer& commandBuffer, uint32_t
     scissor.setOffset({ 0, 0 });
     scissor.extent = swapchainExtent;
     commandBuffer.setScissor(0, scissor);
+
+    prepareScene(commandBuffer);
 
     for (auto& position : scene.trianglePositions) {
         glm::mat4 model = glm::translate(glm::mat4 { 1.0f }, position);
