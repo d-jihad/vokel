@@ -57,6 +57,10 @@ uint32_t ratePhysicalDevice(const vk::PhysicalDevice& physicalDevice)
 
 vk::PhysicalDevice choosePhysicalDevice(const vk::Instance& instance)
 {
+    // VkResult vkEnumeratePhysicalDevices(
+    //      VkInstance                                  instance,
+    //      uint32_t*                                   pPhysicalDeviceCount,
+    //      VkPhysicalDevice*                           pPhysicalDevices);
     auto availableDevices = instance.enumeratePhysicalDevices();
 
     if (availableDevices.empty()) {
@@ -168,8 +172,7 @@ vk::Device createLogicalDevice(const vk::PhysicalDevice& physicalDevice, const v
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-    vk::PhysicalDeviceFeatures enabledFeatures
-        = vk::PhysicalDeviceFeatures {};
+    vk::PhysicalDeviceFeatures enabledFeatures {};
     enabledFeatures.setGeometryShader(true);
 
     std::vector<const char*> enabledLayers;

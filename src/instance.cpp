@@ -66,6 +66,8 @@ vk::Instance createInstance(
     const std::vector<const char*>& extensions,
     const std::vector<const char*>& layers)
 {
+    // VkResult vkEnumerateInstanceVersion(
+    //  uint32_t*                                   pApiVersion);
     uint32_t version = vk::enumerateInstanceVersion();
     if (DEBUG_MODE) {
         std::cout
@@ -89,6 +91,15 @@ vk::Instance createInstance(
      */
     version = VK_MAKE_API_VERSION(0, 1, 0, 0);
 
+    // typedef struct VkApplicationInfo {
+    //     VkStructureType    sType;
+    //     const void*        pNext;
+    //     const char*        pApplicationName;
+    //     uint32_t           applicationVersion;
+    //     const char*        pEngineName;
+    //     uint32_t           engineVersion;
+    //     uint32_t           apiVersion;
+    // } VkApplicationInfo;
     vk::ApplicationInfo appInfo {
         applicationName,
         version,
@@ -105,6 +116,16 @@ vk::Instance createInstance(
         }
     }
 
+    // typedef struct VkInstanceCreateInfo {
+    //      VkStructureType             sType;
+    //      const void*                 pNext;
+    //      VkInstanceCreateFlags       flags;
+    //      const VkApplicationInfo*    pApplicationInfo;
+    //      uint32_t                    enabledLayerCount;
+    //      const char* const*          ppEnabledLayerNames;
+    //      uint32_t                    enabledExtensionCount;
+    //      const char* const*          ppEnabledExtensionNames;
+    // } VkInstanceCreateInfo;
     vk::InstanceCreateInfo createInfo {
         vk::InstanceCreateFlags(),
         &appInfo,
@@ -121,6 +142,10 @@ vk::Instance createInstance(
     }
 
     try {
+        // VkResult vkCreateInstance(
+        //      const VkInstanceCreateInfo*                 pCreateInfo,
+        //      const VkAllocationCallbacks*                pAllocator,
+        //      VkInstance*                                 pInstance);
         return vk::createInstance(createInfo, nullptr);
     } catch (const vk::SystemError& err) {
         if (DEBUG_MODE) {
